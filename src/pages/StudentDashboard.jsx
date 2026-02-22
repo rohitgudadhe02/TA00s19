@@ -1,16 +1,29 @@
 import { useState } from "react";
-import API from "../api/api";
 
 export default function StudentDashboard() {
   const [selectedSkills, setSelectedSkills] = useState([]);
-  const [careerGoal, setCareerGoal] = useState("");
-  const [preferredIndustry, setPreferredIndustry] = useState("");
   const [matches, setMatches] = useState([]);
 
   const availableSkills = [
     "React","Java","Python","C","JavaScript","Node","MongoDB",
-    "SQL","Machine Learning","DSA","Spring Boot",
-    "HTML","CSS","UI/UX","Statistics"
+    "SQL","Machine Learning","DSA"
+  ];
+
+  const alumniList = [
+    {
+      id: 1,
+      name: "Rahul Sharma",
+      industry: "Software Development",
+      skills: ["React","Node","MongoDB","JavaScript"],
+      status: "available"
+    },
+    {
+      id: 2,
+      name: "Priya Mehta",
+      industry: "Data Science",
+      skills: ["Python","Machine Learning","SQL"],
+      status: "available"
+    }
   ];
 
   const toggleSkill = (skill) => {
@@ -21,62 +34,53 @@ export default function StudentDashboard() {
     }
   };
 
-  const calculateMatches = async () => {
-    try {
-      const res = await API.get("/alumni");
-      const alumniList = res.data;
+  const calculateMatches = () => {
+    const results = alumniList.map((alumni) => {
+      const commonSkills = selectedSkills.filter((skill) =>
+        alumni.skills.includes(skill)
+      );
 
-      const results = alumniList.map((alumni) => {
-        const commonSkills = selectedSkills.filter((skill) =>
-          alumni.skills.includes(skill)
-        );
+      const score = Math.round(
+        (commonSkills.length / alumni.skills.length) * 100
+      );
 
-        const skillScore =
-          (commonSkills.length / alumni.skills.length) * 50;
+      return { ...alumni, compatibility: score };
+    });
 
-        const industryScore =
-          preferredIndustry === alumni.industry ? 20 : 0;
+    results.sort((a, b) => b.compatibility - a.compatibility);
+    setMatches(results);
+  };
 
-        const goalScore =
-          careerGoal === alumni.goal ? 20 : 0;
-
-        const availabilityScore = (alumni.availability / 5) * 10;
-
-        const totalScore = Math.round(
-          skillScore + industryScore + goalScore + availabilityScore
-        );
-
-        return {
-          ...alumni,
-          compatibility: totalScore,
-        };
-      });
-
-      results.sort((a, b) => b.compatibility - a.compatibility);
-      setMatches(results);
-
-    } catch (error) {
-      console.error(error);
-      alert("Error fetching alumni from backend");
-    }
+  const sendRequest = (id) => {
+    const updated = matches.map((alumni) =>
+      alumni.id === id
+        ? { ...alumni, status: "requested" }
+        : alumni
+    );
+    setMatches(updated);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-100 to-blue-100 p-10">
-      <h1 className="text-3xl font-bold mb-8">
-        🎓 Smart Compatibility Engine
+    <div className="min-h-screen bg-gradient-to-br from-teal-200 via-blue-100 to-purple-200 p-10">
+      <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">
+        🎓 WarmConnect – Student Dashboard
       </h1>
 
-      <div className="bg-white shadow-xl rounded-2xl p-6 max-w-4xl">
-        <div className="flex flex-wrap gap-3 mb-6">
+      <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-5xl mx-auto">
+
+        <h3 className="font-semibold text-lg mb-4 text-gray-700">
+          Select Your Skills
+        </h3>
+
+        <div className="flex flex-wrap gap-3 mb-8">
           {availableSkills.map((skill) => (
             <button
               key={skill}
               onClick={() => toggleSkill(skill)}
-              className={`px-4 py-2 rounded-full border ${
+              className={`px-4 py-2 rounded-full border transition ${
                 selectedSkills.includes(skill)
                   ? "bg-teal-500 text-white"
-                  : "bg-gray-100"
+                  : "bg-gray-100 hover:bg-gray-200"
               }`}
             >
               {skill}
@@ -84,54 +88,50 @@ export default function StudentDashboard() {
           ))}
         </div>
 
-        <select
-          value={preferredIndustry}
-          onChange={(e) => setPreferredIndustry(e.target.value)}
-          className="w-full border p-3 rounded-lg mb-4"
-        >
-          <option value="">Select Preferred Industry</option>
-          <option value="Software Development">Software Development</option>
-          <option value="Frontend Development">Frontend Development</option>
-          <option value="Backend Engineering">Backend Engineering</option>
-          <option value="Data Science">Data Science</option>
-        </select>
-
-        <select
-          value={careerGoal}
-          onChange={(e) => setCareerGoal(e.target.value)}
-          className="w-full border p-3 rounded-lg mb-4"
-        >
-          <option value="">Select Career Goal</option>
-          <option value="Placement">Placement</option>
-          <option value="Higher Studies">Higher Studies</option>
-          <option value="Startup">Startup</option>
-        </select>
-
         <button
           onClick={calculateMatches}
-          className="bg-teal-500 text-white px-4 py-2 rounded-lg mb-6"
+          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg mb-10 transition"
         >
           Find Best Matches
         </button>
 
-        {matches.map((alumni, index) => (
-          <div key={index} className="bg-gray-50 shadow-md rounded-xl p-4 mb-4">
-            <h3 className="font-bold text-lg">👔 {alumni.name}</h3>
-            <p className="text-sm">Industry: {alumni.industry}</p>
-            <p className="text-sm">Goal: {alumni.goal}</p>
+        {matches.map((alumni) => (
+          <div key={alumni.id} className="bg-gray-50 shadow-md rounded-xl p-6 mb-6">
+            <h3 className="font-bold text-xl text-gray-800">
+              👔 {alumni.name}
+            </h3>
+            <p className="text-gray-600 mb-2">
+              Industry: {alumni.industry}
+            </p>
 
-            <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
+            <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
               <div
-                className="bg-teal-500 h-3 rounded-full"
+                className="bg-teal-500 h-4 rounded-full transition-all"
                 style={{ width: `${alumni.compatibility}%` }}
               ></div>
             </div>
 
-            <p className="mt-1 font-semibold text-teal-600">
+            <p className="mt-2 font-semibold text-teal-600">
               Compatibility: {alumni.compatibility}%
             </p>
+
+            {alumni.status === "available" && (
+              <button
+                onClick={() => sendRequest(alumni.id)}
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+              >
+                Request Mentorship
+              </button>
+            )}
+
+            {alumni.status === "requested" && (
+              <p className="mt-4 text-yellow-600 font-semibold">
+                Request Sent ⏳
+              </p>
+            )}
           </div>
         ))}
+
       </div>
     </div>
   );

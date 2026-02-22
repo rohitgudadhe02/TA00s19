@@ -4,12 +4,9 @@ export default function AlumniLogin() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-100 to-blue-100 flex items-center justify-center">
-      <div className="bg-white shadow-2xl rounded-3xl p-10 w-[400px]">
-
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Alumni Login
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-200 via-blue-100 to-purple-200">
+      <div className="bg-white p-10 rounded-2xl shadow-2xl w-[400px] text-center">
+        <h2 className="text-3xl font-bold mb-6">Alumni Login</h2>
 
         <input
           type="email"
@@ -25,11 +22,10 @@ export default function AlumniLogin() {
 
         <button
           onClick={() => navigate("/alumni-dashboard")}
-          className="w-full bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600 transition"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition"
         >
           Login
         </button>
-
       </div>
     </div>
   );
